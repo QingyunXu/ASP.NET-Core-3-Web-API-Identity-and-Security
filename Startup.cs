@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Dotnet_Core_3_API.Data;
 using Dotnet_Core_3_API.Dto.SMTP;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Dotnet_Core_3_API
 {
@@ -42,11 +44,28 @@ namespace Dotnet_Core_3_API
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
                 options.SignIn.RequireConfirmedEmail = true;
             });
+            services.ConfigureApplicationCookie(option =>
+            {
+                option.LoginPath = "/Auth/Login";
+                option.AccessDeniedPath = "/Auth/AccessDenied";
+                option.ExpireTimeSpan = TimeSpan.FromDays(1);
+            });
             services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
-            services.AddSingleton<IConfiguration>(Configuration);
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddSingleton<ISmtpService, SmtpService>();
+
+            services.AddAuthentication().AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = Configuration["Tokens:Issuer"],
+                    ValidAudience = Configuration["Tokens:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:Key"]))
+                };
+            });
 
             services.AddControllers();
         }

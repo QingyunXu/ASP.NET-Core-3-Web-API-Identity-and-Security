@@ -19,3 +19,13 @@ dotnet tool install --global dotnet-ef
 dotnet ef migrations add Init
 dotnet ef database update
 ```
+
+## Authentication
+
+- NugGet Packages
+
+```
+dotnet add package Microsoft.IdentityModel.Tokens
+dotnet add package System.IdentityModel.Tokens.Jwt
+dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+```

@@ -37,7 +37,7 @@ namespace Dotnet_Core_3_API.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
             ServiceResponse<string> response = await this.authService.Login(loginDto);
