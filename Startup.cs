@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dotnet_Core_3_API.Data;
+using Dotnet_Core_3_API.Dto.SMTP;
+using Dotnet_Core_3_API.Services.Auth;
+using Dotnet_Core_3_API.Services.SMTP;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -29,7 +32,7 @@ namespace Dotnet_Core_3_API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(option => option.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
             services.Configure<IdentityOptions>(options =>
             {
                 options.Password.RequiredLength = 6;
@@ -39,6 +42,12 @@ namespace Dotnet_Core_3_API
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
                 options.SignIn.RequireConfirmedEmail = true;
             });
+            services.Configure<SmtpOptions>(Configuration.GetSection("Smtp"));
+            services.AddSingleton<IConfiguration>(Configuration);
+
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddSingleton<ISmtpService, SmtpService>();
+
             services.AddControllers();
         }
 
